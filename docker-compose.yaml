@@ -1,0 +1,59 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        user: wp
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: wp_backend
+    container_name: wp_backend
+    restart: always
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - wp
+  wp_ui:
+    build:
+      context: ../wp_ui
+      dockerfile: ../wp_ui/Dockerfile
+    image: wp_ui
+    container_name: wp_ui
+    restart: always
+    working_dir: /var/www/
+    ports:
+      - 9090:8080
+    networks:
+      - wp
+  db:
+    image: mysql:8.0
+    container_name: wp_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker/mysqldb:/var/lib/mysql
+    networks:
+      - wp
+  nginx:
+    image: nginx:alpine
+    container_name: wp_nginx
+    restart: unless-stopped
+    ports:
+      - 9001:80
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d/
+    networks:
+      - wp
+
+networks:
+  wp:
+    driver: bridge
