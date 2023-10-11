@@ -113,7 +113,8 @@ class WorkPlanController extends Controller
     }
     public function getWorkPlans(Request $request)
     {
-        return response()->json(Work::where('work_type',"Plan")->whereMonth('created_at',date('m'))
+        return response()->json(Work::where('work_type',"Plan")->whereMonth('created_at',now()->month)
+        ->whereYear('created_at',now()->year)
             ->orderBy('subject')
             ->get());
     }
